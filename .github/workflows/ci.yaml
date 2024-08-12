@@ -1,0 +1,25 @@
+name: Continous Integration
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+    build:
+      name: Build & Test
+      runs-on: self-hosted
+      container: mcr.microsoft.com/dotnet/sdk:8.0
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Install Ghostscript
+          run: |
+            apt-get update
+            apt-get install -y ghostscript
+
+        - name: Build
+          run: dotnet build -c Release
+
+        - name: Test
+          run: dotnet test

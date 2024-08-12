@@ -1,0 +1,70 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number"
+        default: "0.0.0"
+        required: true
+
+jobs:
+    build:
+      name: Build & Test
+      runs-on: self-hosted
+      container: mcr.microsoft.com/dotnet/sdk:8.0
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Install Ghostscript
+          run: |
+            apt-get update
+            apt-get install -y ghostscript
+
+        - name: Build
+          run: dotnet build -c Release
+
+        - name: Test
+          run: dotnet test
+
+    deploy:
+      needs: build
+      name: Upload to NuGet Registry
+      runs-on: self-hosted
+      container: mcr.microsoft.com/dotnet/sdk:8.0
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Pack
+          run: dotnet pack Sources/PdfCompare/PdfCompare.csproj -c Release -p:PackageVersion='${{ github.event.inputs.version }}' --output packages
+
+        - name: Upload to GitHub registry
+          run: |
+            dotnet nuget remove source "github" || true
+            dotnet nuget add source --username CyanCor --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text --name github "https://nuget.pkg.github.com/cyancor/index.json"
+            dotnet nuget push "packages/PdfCompare.${{ github.event.inputs.version }}.nupkg" --api-key "${{ secrets.GITHUB_TOKEN }}" --source "github"
+
+        # - name: Create Tag
+        #   uses: actions/github-script@v5
+        #   with:
+        #     script: |
+        #       github.rest.git.createRef({
+        #         owner: context.repo.owner,
+        #         repo: context.repo.repo,
+        #         ref: 'refs/tags/${{ github.event.inputs.version }}',
+        #         sha: context.sha
+        #       })
+
+        - name: Create a Release
+          uses: cyancor/github-release-action@v1
+          env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            title: ${{ github.event.inputs.version }}
+            tag: ${{ github.event.inputs.version }}
+
+        - name: Upload artifacts
+          uses: actions/upload-artifact@v2
+          with:
+            name: NuGet-Package
+            path: packages
