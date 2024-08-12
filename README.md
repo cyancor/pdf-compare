@@ -1,6 +1,6 @@
 # PDFCompare for .NET
 
-Compares two PDF files with ImageMagick.
+Compares two PDF files in C# using ImageMagick.
 
 ```csharp
 
