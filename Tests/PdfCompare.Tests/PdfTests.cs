@@ -42,6 +42,19 @@ public class PdfTests
     }
 
     [Test]
+    public void CompareOnlyLastPage()
+    {
+        var pdfCompare = new PdfCompare
+        {
+            Reference = "./Assets/Reference.pdf",
+            Comparison = "./Assets/InvalidComparison.pdf",
+            PagesToProcess = [2]
+        };
+
+        pdfCompare.Compare();
+    }
+
+    [Test]
     public void InvalidComparisonWithMask()
     {
         var pdfCompare = new PdfCompare
