@@ -11,11 +11,28 @@ public record MaskImage(string Path, int PageNumber);
 
 public class PdfCompare
 {
+    /// <summary>
+    /// Specifies the output directory of the difference.png images, resulting from the comparison.
+    /// Default: "./ComparisonOutput"
+    /// </summary>
     public string OutputDirectory { get; init; } = "ComparisonOutput";
 
+    /// <summary>
+    /// The reference PDF.
+    /// </summary>
     public required string Reference { get; init; }
+    /// <summary>
+    /// The PDF to compare.
+    /// </summary>
     public required string Comparison { get; init; }
+    /// <summary>
+    /// Optional: a mask to ignore certain areas
+    /// </summary>
     public MaskImage[] Masks { get; init; } = [];
+    /// <summary>
+    /// Optional: only compare certain pages. Index starts at 0.
+    /// </summary>
+    public int[]? PagesToProcess { get; set; }
 
     private List<string> ConvertPdfToImages(string path)
     {
@@ -73,6 +90,14 @@ public class PdfCompare
 
             for (var index = 0; index < referencePdfImages.Count; index++)
             {
+                if (PagesToProcess is { Length: > 0 })
+                {
+                    if (!PagesToProcess.Contains(index))
+                    {
+                        continue;
+                    }
+                }
+
                 var imageCompare = new ImageCompare
                 {
                     Reference = referencePdfImages[index],

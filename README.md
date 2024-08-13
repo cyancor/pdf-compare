@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="./Screenshots/InvalidDocument.png" height="500" />
+</p>
+
+
 # PDFCompare for .NET
 
 Compares two PDF files in C# using ImageMagick.
