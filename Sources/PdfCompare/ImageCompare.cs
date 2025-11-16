@@ -39,8 +39,7 @@ public class ImageCompare
             comparisonImage.Composite(maskImage, CompositeOperator.CopyAlpha);
         }
 
-        using var diffImage = new MagickImage();
-        var distortion = referenceImage.Compare(comparisonImage, ErrorMetric.MeanErrorPerPixel, diffImage);
+        using var diffImage = referenceImage.Compare(comparisonImage, ErrorMetric.MeanErrorPerPixel, Channels.All, out var distortion);
 
         var referenceImageName = Path.GetFileNameWithoutExtension(Reference);
         var differenceImagePath = Path.Combine(OutputDirectory, $"{referenceImageName}.difference.png");
